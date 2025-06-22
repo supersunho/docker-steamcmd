@@ -58,8 +58,8 @@ jobs:
                   tags: |
                       ${{ env.DOCKERHUB_REPO }}:latest
                       ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
-                      ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-                      ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+                      ${{ env.IMAGE_NAME }}:latest
+                      ${{ env.IMAGE_NAME }}:${{ github.sha }}
                   no-cache: ${{ github.event.inputs.clear_cache == 'true' }}
                   cache-from: |
                       type=gha,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-
