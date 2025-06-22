@@ -58,8 +58,8 @@ jobs:
                   tags: |
                       ${{ env.DOCKERHUB_REPO }}:latest
                       ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
-                      ${{ env.REGISTRY }}/steamcmd-arm64:latest
-                      ${{ env.REGISTRY }}/steamcmd-arm64:${{ github.sha }}
+                      ${{ env.REGISTRY }}/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:latest
+                      ${{ env.REGISTRY }}/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:${{ github.sha }}
                   no-cache: ${{ github.event.inputs.clear_cache == 'true' }}
                   cache-from: |
                       type=gha,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-
