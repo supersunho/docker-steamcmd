@@ -1,7 +1,9 @@
-FROM supersunho/fex-emu:ubuntu-24.04
+FROM ghcr.io/supersunho/docker-fex-emu/docker-fex-emu:ubuntu-24.04-2506
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN  useradd -m -s /bin/bash steam
+RUN sudo useradd -m -s /bin/bash steam && \
+    sudo usermod -aG sudo steam && \
+    echo "steam ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/steam
 
 USER steam   
 WORKDIR /home/steam/steamcmd
@@ -14,3 +16,4 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 WORKDIR /home/steam
 ENTRYPOINT ["FEXBash", "/home/steam/steamcmd/steamcmd.sh"]
 CMD ["+quit"]
+
