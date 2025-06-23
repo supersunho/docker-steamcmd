@@ -16,11 +16,9 @@ Not affiliated with Valve.**
 ---
 
 ## 🛠️ Features
-* 🏗️ Pre-built for `linux/arm64`  
-* 🔄 Daily GitHub Actions rebuilds (keeps SteamCMD up to date)  
+* 🏗️ Pre-built for `linux/arm64`   
 * 👤 Runs as non-root `steam` user out of the box  
-* 🧩 Can be used as a base image for your own game-server containers  
-* 📜 OCI labels + reproducible digests
+* 🧩 Can be used as a base image for your own game-server containers   
 
 ---
 
@@ -81,7 +79,6 @@ Refer to Valve’s SteamCMD documentation for official guidance
 
 ## 📚 References
 * steamcmd/docker – community reference implementation 
-* Valve Developer Wiki – SteamCMD guide 
-* Blog: “Creating the first ARM64 Docker image for SteamCMD with FEX Emu” 
+* Valve Developer Wiki – SteamCMD guide  
 
 ---  
