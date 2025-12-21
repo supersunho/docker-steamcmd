@@ -11,9 +11,9 @@ RUN apt-get update && apt-get install -y \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
-RUN useradd -m -s /bin/bash steam && \
-    usermod -aG sudo steam && \
-    echo "steam ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/steam
+RUN sudo useradd -m -s /bin/bash steam && \
+    sudo usermod -aG sudo steam && \
+    echo "steam ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/steam
 
 USER steam   
 WORKDIR /home/steam/steamcmd
@@ -29,9 +29,15 @@ CMD ["+quit"]
 FROM --platform=$TARGETPLATFORM supersunho/fex-emu:latest AS base-arm64
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN useradd -m -s /bin/bash steam && \
-    usermod -aG sudo steam && \
-    echo "steam ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/steam
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN sudo useradd -m -s /bin/bash steam && \
+    sudo usermod -aG sudo steam && \
+    echo "steam ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/steam
 
 USER steam   
 WORKDIR /home/steam/steamcmd
