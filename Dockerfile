@@ -5,6 +5,7 @@
 FROM --platform=$TARGETPLATFORM ubuntu:24.04 AS base-amd64
 ENV DEBIAN_FRONTEND=noninteractive
 
+USER root
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
@@ -29,6 +30,7 @@ CMD ["+quit"]
 FROM --platform=$TARGETPLATFORM supersunho/fex-emu:latest AS base-arm64
 ENV DEBIAN_FRONTEND=noninteractive
 
+USER root
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
