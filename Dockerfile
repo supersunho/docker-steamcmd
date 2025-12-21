@@ -29,9 +29,9 @@ CMD ["+quit"]
 FROM --platform=$TARGETPLATFORM supersunho/fex-emu:latest AS base-arm64
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN sudo useradd -m -s /bin/bash steam && \
-    sudo usermod -aG sudo steam && \
-    echo "steam ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/steam
+RUN useradd -m -s /bin/bash steam && \
+    usermod -aG sudo steam && \
+    echo "steam ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/steam
 
 USER steam   
 WORKDIR /home/steam/steamcmd
