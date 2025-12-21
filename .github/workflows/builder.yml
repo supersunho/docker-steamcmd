@@ -1,4 +1,4 @@
-name: Build & Push SteamCMD (arm64)
+name: Build & Push SteamCMD (Multi-arch)
 
 on:
     # push:
@@ -13,96 +13,94 @@ on:
                 type: boolean
 env:
     REGISTRY: ghcr.io
-    IMAGE_NAME: ${{ github.repository }}/${{ github.event.repository.name }}
+    DOCKERHUB_REPO: ${{ vars.DOCKERHUB_USERNAME }}/steamcmd
     CACHE_VERSION: v1
-    DOCKERHUB_REPO: ${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64
 
 jobs:
-    build:
-        runs-on: ubuntu-24.04-arm
+    build-and-push:
+        runs-on: ubuntu-24.04
         outputs:
-            digest: ${{ steps.builder.outputs.digest }}
+            digest: ${{ steps.docker_build.outputs.digest }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Set up Buildx
+            - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
               with:
                   driver: docker-container
                   use: true
                   install: true
-                  platforms: linux/arm64
+                  platforms: linux/amd64,linux/arm64
                   driver-opts: |
                       network=host
                       image=moby/buildkit:buildx-stable-1
+
             - name: Authenticate with GitHub Container Registry
               uses: docker/login-action@v3
               with:
                   registry: ${{ env.REGISTRY }}
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
+
             - name: Login to Docker Hub
               uses: docker/login-action@v3
               with:
                   username: ${{ vars.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            - name: Build and push (arm64)
-              id: builder
+            - name: Build and push multi-architecture image
+              id: docker_build
               uses: docker/build-push-action@v5
               with:
                   context: .
                   push: true
-                  platforms: linux/arm64
+                  platforms: linux/amd64,linux/arm64
                   tags: |
                       ${{ env.DOCKERHUB_REPO }}:latest
+                      ${{ env.DOCKERHUB_REPO }}:amd64
+                      ${{ env.DOCKERHUB_REPO }}:arm64
                       ${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
-                      ${{ env.REGISTRY }}/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:latest
-                      ${{ env.REGISTRY }}/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:${{ github.sha }}
+                      ${{ env.REGISTRY }}/${{ github.repository }}:latest
+                      ${{ env.REGISTRY }}/${{ github.repository }}:amd64
+                      ${{ env.REGISTRY }}/${{ github.repository }}:arm64
+                      ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
                   no-cache: ${{ github.event.inputs.clear_cache == 'true' }}
                   cache-from: |
                       type=gha,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-
                   cache-to: |
                       type=gha,mode=min,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-
 
-            - name: Export digest for manifest
-              run: |
-                  mkdir -p /tmp/digests/arm64-${{ github.sha }}
-                  echo "${{ steps.builder.outputs.digest }}" > /tmp/digests/arm64-${{ github.sha }}/digest
-                  echo "📋 Ubuntu digest exported for arm64-${{ github.sha }}"
-
-            - name: Upload build digest artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: digests-arm64-${{ github.sha }}
-                  path: /tmp/digests/arm64-${{ github.sha }}/*
-                  retention-days: 1
-
     create-release:
-        needs: build
-        runs-on: ubuntu-24.04-arm
+        needs: build-and-push
+        runs-on: ubuntu-24.04
 
         steps:
             - uses: actions/checkout@v4
             - name: Generate release notes
               run: |
                   cat << 'EOF' > RELEASE_NOTES.md
-                  ## SteamCMD Docker image (ARM64)
+                  ## SteamCMD Docker image (Multi-arch)
 
                   This release publishes a **community-maintained** Docker image that runs the
-                  official x86_64 SteamCMD client on native ARM64 hosts via FEX-Emu.
+                  official x86_64 SteamCMD client on multiple architectures:
+                  - On AMD64: Directly on native platform
+                  - On ARM64: Via FEX-Emu
+
                   It is *not* an official Valve image; see the community reference
                   steamcmd/docker project and Valve's SteamCMD documentation.
 
                   ### Image tags  
-                  - docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:latest  
-                  - docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:${{ github.ref_name }}
+                  - Multi-arch manifest: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:latest\`
+                  - AMD64 only: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:amd64\`
+                  - ARM64 only: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:arm64\`
+                  - Version specific: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:${{ github.sha }}\`
 
                   ### Platforms  
-                  - linux/arm64  
+                  - linux/amd64
+                  - linux/arm64
 
-                  Image digest: **${{ needs.build.outputs.digest }}**
+                  Image digest: **${{ needs.build-and-push.outputs.digest }}**
                   EOF
 
             # 3) GitHub Release 생성
@@ -110,30 +108,32 @@ jobs:
               uses: softprops/action-gh-release@v2
               with:
                   tag_name: ${{ github.ref_name }}
-                  name: SteamCMD ARM64 ${{ github.ref_name }}
+                  name: SteamCMD Multi-arch ${{ github.ref_name }}
                   body_path: RELEASE_NOTES.md
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     build-summary:
-        needs: build
-        runs-on: ubuntu-24.04-arm
+        needs: build-and-push
+        runs-on: ubuntu-24.04
         steps:
             - name: Write summary
               run: |
                   {
-                    echo "### SteamCMD Docker Image (ARM64)"
+                    echo "### SteamCMD Docker Image (Multi-arch)"
                     echo ""
                     echo "**Status:** Built & pushed to Docker Hub"
                     echo ""
                     echo "| Item | Value |"
                     echo "|------|-------|"
-                    echo "| Image | \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd-arm64:latest\` |"
-                    echo "| Digest | \`${{ needs.build.outputs.digest }}\` |"
-                    echo "| Base | \`supersunho/fex-emu:ubuntu-24.04\` |"
-                    echo "| Platform | \`linux/arm64\` |"
+                    echo "| Multi-arch Image | \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:latest\` |"
+                    echo "| AMD64 only | \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:amd64\` |"
+                    echo "| ARM64 only | \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:arm64\` |"
+                    echo "| Platforms | \`linux/amd64, linux/arm64\` |"
+                    echo "| Digest | \`${{ needs.build-and-push.outputs.digest }}\` |"
                     echo ""
                     echo "The container embeds the x86_64 SteamCMD binary and runs it through"
-                    echo "FEX-Emu, following the community guidelines in **steamcmd/docker**"
+                    echo "native execution on AMD64 and via FEX-Emu on ARM64,"
+                    echo "following the community guidelines in **steamcmd/docker**"
                     echo "and Valve's official SteamCMD documentation."
                   } >> "$GITHUB_STEP_SUMMARY"
