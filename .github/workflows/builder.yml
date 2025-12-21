@@ -67,9 +67,11 @@ jobs:
                       ${{ env.REGISTRY }}/${{ github.repository }}:${{ github.sha }}
                   no-cache: ${{ github.event.inputs.clear_cache == 'true' }}
                   cache-from: |
-                      type=gha,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-
+                      type=gha,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-amd64
+                      type=gha,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-arm64
                   cache-to: |
-                      type=gha,mode=min,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-
+                      type=gha,mode=min,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-amd64
+                      type=gha,mode=min,scope=${{ env.CACHE_VERSION }}-${{ github.event.repository.name }}-arm64
 
     create-release:
         needs: build-and-push
