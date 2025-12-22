@@ -1,11 +1,8 @@
-# syntax=docker/dockerfile:1.7
-
-# Buildx will provide TARGETARCH and TARGETPLATFORM automatically
 ARG TARGETARCH
 ARG TARGETPLATFORM
 
 # amd64 specific stage  
-FROM ubuntu:24.04 AS steamcmd-amd64
+FROM ubuntu:24.04 AS base-amd64
 ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
@@ -31,7 +28,7 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 WORKDIR /home/steam
 
 # arm64 specific stage  
-FROM supersunho/fex-emu:latest AS steamcmd-arm64
+FROM supersunho/fex-emu:latest AS base-arm64
 ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
@@ -57,7 +54,7 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 WORKDIR /home/steam
 
 # Final stage: select by TARGETARCH value  
-FROM steamcmd-${TARGETARCH} AS final
+FROM base-${TARGETARCH} AS final
 
 USER steam
 WORKDIR /home/steam
