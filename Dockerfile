@@ -5,7 +5,7 @@ ARG TARGETARCH
 ARG TARGETPLATFORM
 
 # amd64 specific stage  
-FROM --platform=${TARGETPLATFORM} ubuntu:24.04 AS steamcmd-amd64
+FROM ubuntu:24.04 AS steamcmd-amd64
 ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
@@ -31,7 +31,7 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 WORKDIR /home/steam
 
 # arm64 specific stage  
-FROM --platform=${TARGETPLATFORM} supersunho/fex-emu:latest AS steamcmd-arm64
+FROM supersunho/fex-emu:latest AS steamcmd-arm64
 ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
