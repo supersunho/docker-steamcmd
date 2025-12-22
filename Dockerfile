@@ -59,11 +59,11 @@ FROM base-${TARGETARCH} AS final
 ARG TARGETARCH
 ENV TARGETARCH=${TARGETARCH}
 
-USER steam
-WORKDIR /home/steam
-
+USER root
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+USER steam
+WORKDIR /home/steam
+
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["+quit"]
