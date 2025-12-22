@@ -28,7 +28,7 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 WORKDIR /home/steam
 
 # arm64 specific stage  
-FROM supersunho/fex-emu:latest AS base-arm64
+FROM supersunho/fex-emu:ubuntu-24.04 AS base-arm64
 ENV DEBIAN_FRONTEND=noninteractive
 
 USER root
