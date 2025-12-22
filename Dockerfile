@@ -53,12 +53,17 @@ RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.t
 
 WORKDIR /home/steam
 
-# Final stage: select by TARGETARCH value  
+# Final stage: select by TARGETARCH value   
 FROM base-${TARGETARCH} AS final
+
+ARG TARGETARCH
+ENV TARGETARCH=${TARGETARCH}
 
 USER steam
 WORKDIR /home/steam
 
-# Common entrypoint: run SteamCMD when container starts
-ENTRYPOINT ["/home/steam/steamcmd/steamcmd.sh"]
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["+quit"]
