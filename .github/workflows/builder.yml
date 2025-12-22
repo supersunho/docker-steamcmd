@@ -11,6 +11,10 @@ on:
                 required: false
                 default: false
                 type: boolean
+            tag_name:
+                description: "Tag name for release (optional, leave empty to skip release creation)"
+                required: false
+                type: string
 env:
     REGISTRY: ghcr.io
     DOCKERHUB_REPO: ${{ vars.DOCKERHUB_USERNAME }}/steamcmd
@@ -76,6 +80,7 @@ jobs:
     create-release:
         needs: build-and-push
         runs-on: ubuntu-24.04
+        if: ${{ inputs.tag_name != '' }}
 
         steps:
             - uses: actions/checkout@v4
@@ -92,13 +97,13 @@ jobs:
                   It is *not* an official Valve image; see the community reference
                   steamcmd/docker project and Valve's SteamCMD documentation.
 
-                  ### Image tags  
+                  ### Image tags
                   - Multi-arch manifest: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:latest\`
                   - AMD64 only: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:amd64\`
                   - ARM64 only: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:arm64\`
                   - Version specific: \`docker.io/${{ vars.DOCKERHUB_USERNAME }}/steamcmd:${{ github.sha }}\`
 
-                  ### Platforms  
+                  ### Platforms
                   - linux/amd64
                   - linux/arm64
 
@@ -109,8 +114,8 @@ jobs:
             - name: Create GitHub Release
               uses: softprops/action-gh-release@v2
               with:
-                  tag_name: ${{ github.ref_name }}
-                  name: SteamCMD Multi-arch ${{ github.ref_name }}
+                  tag_name: ${{ inputs.tag_name }}
+                  name: SteamCMD Multi-arch ${{ inputs.tag_name }}
                   body_path: RELEASE_NOTES.md
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
